@@ -1,16 +1,22 @@
 import * as React from 'react';
+import { useState } from 'react';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { Avatar, Button, CssBaseline, TextField, Link, Paper, Box, Grid, Typography } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
+import axios from 'axios';
 import Input from './components/Input';
 import Copyright from './components/Copyright';
+import Router from 'next/router';
 
-const id = 'client_id=q3ZJvixJoRKUKx2O9KpE10zhmT3HU1wUWrZFXBg0gHw'
+const id = 'client_id=q3ZJvixJoRKUKx2O9KpE10zhmT3HU1wUWrZFXBg0gHw';
 const theme = createTheme();
 
 export default function Login() {
+  const [loginError, setLoginError] = useState('');
+  const [loginSuccess, setLoginSuccess] = useState('');
+
   const validationSchema = Yup.object({
     email: Yup.string().email().required(),
     password: Yup.string().required()
@@ -22,7 +28,16 @@ export default function Login() {
   };
 
   const onSubmit = (values) => {
-    alert(JSON.stringify(values, null, 2));
+    axios.post('https://reqres.in/api/login', values)
+      .then(function (response) {
+        console.log('LOGIN-SUCCESSFUL', response);
+        setLoginSuccess('Youre in dude!');
+        Router.push('/Success');
+      })
+      .catch(function (error) {
+        console.log('LOGIN-FAILED', error);
+        setLoginError('Username or password is incorrect');
+      });
   };
 
   return (
@@ -61,6 +76,8 @@ export default function Login() {
               <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
                 <LockOutlinedIcon />
               </Avatar>
+              {loginSuccess && <p style={{color: 'green'}}>{loginSuccess}</p>}
+              {loginError && <p style={{color: 'red'}}>{loginError}</p>}
               <Form>
                 <Input label='Email Address' name='email' type='email' />
                 <Input label='Password' name='password' type='password' />
